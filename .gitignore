@@ -1,0 +1,17 @@
+*.log
+
+# Scala
+*.class
+
+# sbt
+/project/project/
+/project/target/
+/target/
+
+# IntelliJ IDEA
+/.bsp/
+/.idea/
+*.iml
+
+# H2 database
+/database/data.*.db

@@ -8,27 +8,19 @@ ThisBuild / scalacOptions ++= Seq(
 )
 
 lazy val root = (project in file("."))
+  .dependsOn(codegen)
   .settings(
     name := "custom-slickgen",
+    libraryDependencies ++= Seq(
+      // for Liquibase
+      "org.liquibase" % "liquibase-core" % "4.4.3",
+      "com.h2database" % "h2" % "1.4.200",
+      "org.slf4j" % "slf4j-simple" % "1.7.32",
+      "info.picocli" % "picocli" % "4.6.1" % Provided,
+    ),
   )
 
-ThisBuild / libraryDependencies ++= {
-  val slickVersion = "3.3.3"
-
-  Seq(
-    "org.liquibase" % "liquibase-core" % "4.4.3",
-    "com.h2database" % "h2" % "1.4.200",
-    "org.slf4j" % "slf4j-simple" % "1.7.32",
-
-    "com.typesafe.slick" %% "slick"          % slickVersion,
-    "com.typesafe.slick" %% "slick-codegen"  % slickVersion,
-    "com.typesafe.slick" %% "slick-hikaricp" % slickVersion,
-
-    // for code generation
-    "info.picocli" % "picocli" % "4.6.1" % Provided,
-    "org.scala-lang" % "scala-library" % scalaVersion.value,
-  )
-}
+lazy val codegen = project
 
 // Slick code generation
 
@@ -38,9 +30,7 @@ lazy val domainClassGeneration = taskKey[Seq[File]]("Generate the domain classes
 domainClassGeneration := {
   val logger = streams.value.log
   val url = "jdbc:h2:./database/data"
-  val classpath =
-    (baseDirectory.value / "project" / "target" * "scala*" * "sbt*" * "classes").get() ++
-      (Compile / dependencyClasspath).value.files
+  val classpath = (Compile / dependencyClasspath).value.files
 
   // Run Liquibase
 
@@ -60,7 +50,7 @@ domainClassGeneration := {
   val driver    = "org.h2.Driver"
   val outputDir = (Compile / sourceManaged).value / "slick"
   val pkg       = "example.domain"
-  val className = classOf[ExampleCodeGenerator].getName
+  val className = "ExampleCodeGenerator"
 
 /*
   slick.codegen.SourceCodeGenerator.run(
